@@ -19,6 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity {
     TextView compra_venda;
     TextView dolar;
+    TextView previ;
     EditText mEditValor;
     Button mButton;
 
@@ -38,9 +39,42 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         compra_venda_display(); //Aqui é o display inicial da cotação de compra/venda
+        previsao();
 
     }
 
+    public void previsao() {
+        previ = findViewById(R.id.previ);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://economia.awesomeapi.com.br/") //Restante da url que foi declarada na interface PrevisaoAPI
+                .addConverterFactory(GsonConverterFactory.create()) //Aqui eu puxo a biblioteca do gson factory que faz a leitura do json importado da URL (API)
+                .build();
+        PrevisaoAPI PrevisaoAPI = retrofit.create(PrevisaoAPI.class);
+        Call<List<Moeda>> call = PrevisaoAPI.getMoedas();
+        call.enqueue(new Callback<List<Moeda>>() {
+            @Override
+            public void onResponse(Call<List<Moeda>> call, Response<List<Moeda>> response) {
+                if (!response.isSuccessful()) { //Aqui é basicamente uma checagem para ver se a resposta deu sucesso na requisição get.
+                    return;
+                }
+                List<Moeda> previsao = response.body(); //Aqui eu atribuo a lista de moeda aos objetos que consegui pelo body da API.
+                double soma = 0; //Inicialização da variável responsável pela soma das variações da moeda.
+                double compra = 0; //Inicialização da variável responsável por receber o valor de compra.
+                for (Moeda prev : previsao) {
+                    soma += prev.getPctChange(); //Soma de todas as variações da moeda.
+                    compra = prev.getBid(); //Atribuo o valor da compra à variável compra.
+                }
+                soma = soma / 15; //Divido o resultado da soma pela quantidade de elementos para ter uma média
+                double resultado = compra / soma; //Divido o valor de compra pelo resultado da média da soma.
+                previ.setText(Double.toString(resultado)); //Printo o valor na tela.
+            }
+
+            @Override
+            public void onFailure(Call<List<Moeda>> call, Throwable t) {
+
+            }
+        });
+    }
 
     public void compra_venda_display() {
         compra_venda = findViewById(R.id.cotacao);
@@ -72,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     //Mesma coisa da classe de cima porém com algumas diferenças.
     public void conversao() {
         dolar = findViewById(R.id.dolar);
@@ -93,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 for (Moeda moeda : moedas) {
                     double compra = moeda.getBid(); //Puxa o valor de compra.
                     double real = Double.parseDouble(mEditValor.getText().toString()); //Puxa o valor que foi inserido pelo usuário
-                    double resultado = compra * real; //Variável para realizar a multiplicação.
+                    double resultado = real / compra; //Variável para realizar a multiplicação.
                     dolar.setText(Double.toString(resultado)); //Manipulação pro display dar certo, com valores double é meio chato.
 
                 }
