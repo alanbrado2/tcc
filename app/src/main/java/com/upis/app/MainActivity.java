@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         compra_venda_display(); //Aqui é o display inicial da cotação de compra/venda
-        previsao();
+        previsao(); //Aqui é o display inicial da previsão da moeda, baseada na decomposição da timestamp em relação à variação
 
     }
 
