@@ -58,14 +58,15 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 List<Moeda> previsao = response.body(); //Aqui eu atribuo a lista de moeda aos objetos que consegui pelo body da API.
-                double soma = 0; //Inicialização da variável responsável pela soma das variações da moeda.
-                double compra = 0; //Inicialização da variável responsável por receber o valor de compra.
+                double soma_variac = 0; //Inicialização da variável responsável pela soma das variações da moeda.
+                double soma_compra = 0; //Inicialização da variável responsável por receber o valor de compra.
                 for (Moeda prev : previsao) {
-                    soma += prev.getPctChange(); //Soma de todas as variações da moeda.
-                    compra = prev.getBid(); //Atribuo o valor da compra à variável compra.
+                    soma_variac += prev.getPctChange(); //Soma de todas as variações da moeda.
+                    soma_compra += prev.getBid(); //Soma de todos os valores de compra da moeda.
                 }
-                soma = soma / 15; //Divido o resultado da soma pela quantidade de elementos para ter uma média
-                double resultado = compra / soma; //Divido o valor de compra pelo resultado da média da soma.
+                soma_variac = soma_variac / 15; //Divido o resultado da soma pela quantidade de elementos para ter uma média
+                soma_compra = soma_compra / 15;
+                double resultado = soma_compra / soma_variac; //Divido o valor de compra pelo resultado da média da soma.
                 previ.setText(Double.toString(resultado)); //Printo o valor na tela.
             }
 
