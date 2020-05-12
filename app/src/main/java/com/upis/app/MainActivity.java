@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 for (Moeda moeda : moedas) {
                     double compra = moeda.getBid(); //Puxa o valor de compra.
                     double real = Double.parseDouble(mEditValor.getText().toString()); //Puxa o valor que foi inserido pelo usuário
-                    double resultado = real/compra; //Variável para realizar a multiplicação.
+                    double resultado = real/compra; //Variável para realizar a divisão.
                     dolar.setText(Double.toString(resultado)); //Manipulação pro display dar certo, com valores double é meio chato.
 
                 }
