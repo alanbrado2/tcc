@@ -8,6 +8,18 @@ public class Moeda {
     //"pctChange" representa a variação da moeda.
     double pctChange;
 
+    double cotacaoCompra;
+
+    String dataHoraCotacao;
+
+    public double getCotacaoCompra() {
+        return cotacaoCompra;
+    }
+
+    public String getDataHoraCotacao() {
+        return dataHoraCotacao;
+    }
+
     public double getBid() {
         return bid;
     }
