@@ -1,12 +1,14 @@
 package com.upis.app;
 
+import android.os.Bundle;
+import android.os.StrictMode;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.encog.ConsoleStatusReportable;
 import org.encog.bot.BotUtil;
 import org.encog.mathutil.error.ErrorCalculation;
 import org.encog.mathutil.error.ErrorCalculationMode;
@@ -23,14 +25,9 @@ import org.encog.ml.model.EncogModel;
 import org.encog.util.csv.CSVFormat;
 import org.encog.util.csv.ReadCSV;
 
-
-import android.os.Bundle;
-import android.os.StrictMode;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import retrofit2.Call;
@@ -73,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
 
     public void compra_venda_display() {
         compra_venda = findViewById(R.id.cotacao);
