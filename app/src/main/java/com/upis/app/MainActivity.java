@@ -28,6 +28,8 @@ import org.encog.util.csv.ReadCSV;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 import retrofit2.Call;
@@ -38,6 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     static String DATA_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='01-06-2020'&@dataFinalCotacao='06-06-2020'&$top=100&$format=text/csv&$select=cotacaoCompra";
+    NumberFormat formatter = new DecimalFormat("#0.00"); //Formatação de saída dos números na tela do app.
     TextView compra_venda;
     TextView dolar;
     TextView previ;
@@ -121,11 +124,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 List<Moeda> moedas = response.body();
                 for (Moeda moeda : moedas) {
+                    double saida_display = 0;
                     double compra = moeda.getBid(); //Puxa o valor de compra.
                     double real = Double.parseDouble(mEditValor.getText().toString()); //Puxa o valor que foi inserido pelo usuário
                     double resultado = real / compra; //Variável para realizar a multiplicação.
-                    dolar.setText(Double.toString(resultado)); //Manipulação pro display dar certo, com valores double é meio chato.
-
+                    dolar.setText(formatter.format(resultado));
                 }
             }
 
@@ -140,18 +143,17 @@ public class MainActivity extends AppCompatActivity {
         if (args.length != 0) {
             tempPath = args[0];
         } else {
-            tempPath = System.getProperty("java.io.tmpdir");
+            tempPath = System.getProperty("java.io.tmpdir"); //Diretório temporário para armazenamento do arquivo baixado pela API.
         }
 
         File filename = new File(tempPath, "auto-mpg.data");
         BotUtil.downloadPage(new URL(MainActivity.DATA_URL), filename);
-        System.out.println("Downloading sunspot dataset to: " + filename);
         return filename;
     }
 
     public void previsao() throws MalformedURLException {
         previ = findViewById(R.id.previ);
-
+        double saida_display = 0;
         //Seleciona o método de erro (rms = root mean square error)
         ErrorCalculation.setMode(ErrorCalculationMode.RMS);
 
@@ -220,7 +222,8 @@ public class MainActivity extends AppCompatActivity {
             //Captura a coluna 0 do vetor de retorno, que é o valor previsto.
             String dolarPrevisto = helper.denormalizeOutputVectorToString(output)[0];
             //Troca o valor do campo de texto que é nulo para o valor previsto pela framework encog.
-            previ.setText(dolarPrevisto);
+            saida_display = Double.parseDouble(dolarPrevisto);
+            previ.setText(formatter.format(saida_display));
         }
     }
 }
