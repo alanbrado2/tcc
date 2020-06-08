@@ -9,7 +9,7 @@
 
     <TextView
         android:id="@+id/cotacao"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="start"
         android:gravity="center"
@@ -22,7 +22,7 @@
 
     <EditText
         android:id="@+id/edit_Real"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints=""
         android:ems="10"
@@ -36,7 +36,7 @@
 
     <Button
         android:id="@+id/converter"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/converter"
         app:layout_constraintEnd_toEndOf="parent"
@@ -47,9 +47,22 @@
 
     <TextView
         android:id="@+id/dolar_titulo"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Valor em Dólar"
+        android:ellipsize="start"
+        android:gravity="center"
+        android:text="@string/valor_em_d_lar"
+        android:textSize="25sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteY="84dp" />
+
+    <TextView
+        android:id="@+id/dolar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:ellipsize="start"
         android:gravity="center"
         android:textSize="25sp"
@@ -60,33 +73,22 @@
         tools:layout_editor_absoluteY="84dp" />
 
     <TextView
-        android:id="@+id/dolar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ellipsize="start"
-        android:gravity="center"
-        android:textSize="25sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteY="84dp" />
-    <TextView
         android:id="@+id/prev_titulo"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Previsão"
         android:ellipsize="start"
         android:gravity="center"
+        android:text="@string/previs_o"
         android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteY="84dp" />
+
     <TextView
         android:id="@+id/previ"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="start"
         android:gravity="center"

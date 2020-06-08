@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">App</string>
+    <string name="app_name">Dólar Agora 1.0</string>
     <string name="converter">Converter</string>
     <string name="valor_em_real">Valor em Real</string>
+    <string name="valor_em_d_lar">Valor em Dólar</string>
+    <string name="previs_o">Previsão</string>
 </resources>
