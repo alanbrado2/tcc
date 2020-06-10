@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             local_Temp = System.getProperty("java.io.tmpdir"); //Diretório temporário para armazenamento do arquivo baixado.
         }
-
         File filename = new File(local_Temp, "auto-mpg.data");
         BotUtil.downloadPage(new URL(MainActivity.previsao_URL), filename);
         return filename;
@@ -149,60 +148,44 @@ public class MainActivity extends AppCompatActivity {
 
     public void previsao_Func() throws MalformedURLException {
         previ_View = findViewById(R.id.previ);
-        double saida_display = 0;
         //Seleciona o método de erro (rms = root mean square error)
         ErrorCalculation.setMode(ErrorCalculationMode.RMS);
-
         //Define o arquivo com os dados de entrada.
         String[] args = new String[0];
         File filename = downloadData(args);
-
         //Mapeia o arquivo de entrada em um "VersatileDatasource"
         CSVFormat format = new CSVFormat(',', ' ');
         VersatileDataSource source = new CSVDataSource(filename, true, format);
         VersatileMLDataSet data = new VersatileMLDataSet(source);
         data.getNormHelper().setFormat(format);
-
         //Define o formato do arquivo e especifica a coluna.
         ColumnDefinition columnDolar = data.defineSourceColumn("cotacaoCompra", ColumnType.continuous);
-
         //Analisa o arquivo.
         data.analyze();
-
-        //Aqui eu especifico que a coluna de regressão será a columnDolar
+        //Especifica que a coluna de regressão será a columnDolar
         data.defineInput(columnDolar);
         data.defineOutput(columnDolar);
-
         //Cria rede neural do tipo feedfoward.
         EncogModel model = new EncogModel(data);
         model.selectMethod(data, MLMethodFactory.TYPE_FEEDFORWARD);
-
         //Normaliza os dados, a configuração está como automática a partir do modelo escolhido.
         data.normalize();
-
         //Define série temporal.
         data.setLeadWindowSize(1);
         data.setLagWindowSize(3);
-
-        //Define os dados para validação final.
-        //30% da base, sem embaralhar, semente fixa.
+        //Define os dados para validação final (30% da base, sem embaralhar, semente fixa).
         model.holdBackValidation(0.3, false, 1001);
-
         //Seleciona o tipo de treinamento de acordo com o modelo.
         model.selectTrainingType(data);
-
         //Faz o treinamento dos dados com validação cruzada de 3 dobras.
         //Retorna o melhor método encontrado, no caso será BasicNetwork
         MLRegression bestMethod = (MLRegression) model.crossvalidate(3, false);
-
         //Inicia os parâmetros de normalização.
         NormalizationHelper helper = data.getNormHelper();
-
         //Formata e lê como csv.
         ReadCSV csv = new ReadCSV(filename, true, format);
-        String[] line = new String[1];   //  VETOR DE ENTRADA (SÓ A COTAÇÃO)
-        double[] slice = new double[1];  // VETOR DE SAÍDA (SÓ UM DOUBLE!)
-
+        String[] line = new String[1];   //  Vetor de entrada (Somente a cotação)
+        double[] slice = new double[1];  // Vetor de saída (Somente UM double)
         //Pegas as últimas 5 cotações do arquivo.
         MLData input = helper.allocateInputVector(5);
         //Processa a regressão.
@@ -217,9 +200,8 @@ public class MainActivity extends AppCompatActivity {
             MLData output = bestMethod.compute(input);
             //Captura a coluna 0 do vetor de retorno, que é o valor previsto.
             String dolarPrevisto = helper.denormalizeOutputVectorToString(output)[0];
-            //Troca o valor do campo de texto que é nulo para o valor previsto pela framework encog.
-            saida_display = Double.parseDouble(dolarPrevisto);
-            previ_View.setText(formatter.format(saida_display));
+            //Seta o valor da TextView para o valor fornecido pela ENCOG como previsão final.
+            previ_View.setText(formatter.format(Double.parseDouble(dolarPrevisto)));
         }
     }
 }
