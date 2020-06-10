@@ -4,4 +4,7 @@
     <string name="valor_em_real">Valor em Real</string>
     <string name="valor_em_d_lar">Valor em Dólar</string>
     <string name="previs_o">Previsão</string>
+    <string name="valor_de_venda">Valor de Venda</string>
+    <string name="convers_o_para_d_lar">Conversão para Dólar</string>
+    <string name="valor_de_compra">Valor de Compra</string>
 </resources>

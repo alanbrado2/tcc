@@ -52,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
     static String previsao_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='" + inicio + "'&@dataFinalCotacao='" + fim + "'&$top=100&$format=text/csv&$select=cotacaoCompra";
     String local_Temp; //Local de armazenamento temporário do arquivo baixado para a previsão.
     NumberFormat formatter = new DecimalFormat("#0.00"); //Formatação para os valores double.
-    TextView cotac_View; //TextView da cotação atual.
+    TextView cotac_Compra; //TextView da cotação atual.
+    TextView cotac_Venda; //TextView da cotação atual.
     TextView dolar_View; //TextView da conversão.
     TextView previ_View; //TextView da previsão.
     EditText valor_Edit; //Edição do valor inserado pelo usuário para a conversão.
@@ -80,7 +81,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void cotacao_Func() {
-        cotac_View = findViewById(R.id.cotacao);
+        cotac_Compra = findViewById(R.id.cotacao_compra);
+        cotac_Venda = findViewById(R.id.cotacao_venda);
         Retrofit retrofit = new Retrofit.Builder() //Cria o construtor do Retrofit.
                 .baseUrl("https://economia.awesomeapi.com.br/") //Restante da url que foi declarada na interface MoedaAPI
                 .addConverterFactory(GsonConverterFactory.create()) //O GsonFactory faz a leitura do jSON importado pela API.
@@ -95,10 +97,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 List<Moeda> moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
                 for (Moeda moeda : moedas) {
-                    String content = "";
-                    content += "Compra: " + moeda.getBid() + "\n"; //Recebe o valor de compra atual.
-                    content += "Venda: " + moeda.getAsk(); //Recebe o valor de venda atual.
-                    cotac_View.append(content); //Junta tudo e substitui o valor final na TextView "cotacao"
+                    cotac_Compra.setText(formatter.format(moeda.getBid()));
+                    cotac_Venda.setText(formatter.format(moeda.getAsk()));
                 }
             }
 
