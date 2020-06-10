@@ -1,5 +1,6 @@
 package com.upis.app;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.encog.bot.BotUtil;
@@ -30,6 +32,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import retrofit2.Call;
@@ -38,121 +42,113 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity {
-    static String DATA_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='01-06-2020'&@dataFinalCotacao='06-06-2020'&$top=100&$format=text/csv&$select=cotacaoCompra";
-    NumberFormat formatter = new DecimalFormat("#0.00"); //Formatação de saída dos números na tela do app.
-    TextView compra_venda;
-    TextView dolar;
-    TextView previ;
-    EditText mEditValor;
-    Button mButton;
-    String tempPath;
-
-    /*Todas as declarações acima são referentes aos campos definidos
-    na nossa activity main
-    */
+    static LocalDate data_inicio = LocalDate.now().minusDays(5); //Data atual -5 dias.
+    static LocalDate data_fim = LocalDate.now(); //Data atual.
+    static DateTimeFormatter data_format = DateTimeFormatter.ofPattern("dd-MM-YYYY"); //Formatação para adequar à request da API.
+    static String inicio = data_inicio.format(data_format); //String para compor a previsão_URL como parâmetro.
+    static String fim = data_fim.format(data_format); //String para compor a previsão_URL como parâmetro.
+    static String previsao_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='" + inicio + "'&@dataFinalCotacao='" + fim + "'&$top=100&$format=text/csv&$select=cotacaoCompra";
+    String local_Temp; //Local de armazenamento temporário do arquivo baixado para a previsão.
+    NumberFormat formatter = new DecimalFormat("#0.00"); //Formatação para os valores double.
+    TextView cotac_View; //TextView da cotação atual.
+    TextView dolar_View; //TextView da conversão.
+    TextView previ_View; //TextView da previsão.
+    EditText valor_Edit; //Edição do valor inserado pelo usuário para a conversão.
+    Button conver_Button; //Botão para executar a conversão.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mButton = (Button) findViewById(R.id.converter); //Aqui eu especifico que o mButton significa o botão que declarei
-        mButton.setOnClickListener(new View.OnClickListener() { //Aqui eu especifico que quando o botão for clicado, executar a classe conversão()
+        conver_Button = (Button) findViewById(R.id.converter); //Atribuo o botão da activity_main ao botão criado.
+        conver_Button.setOnClickListener(new View.OnClickListener() { //Faz com que quando o botão seja pressionado, execute a função conversão().
             @Override
             public void onClick(View v) {
-                conversao();
+                conversao_Func();
             }
         });
-        compra_venda_display(); //Aqui é o display inicial da cotação de compra/venda
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-
-        StrictMode.setThreadPolicy(policy);
-        try {
-            previsao();
+        cotacao_Func(); //Aqui é o display inicial da cotação de compra/venda
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build(); //Permite que as webrequests sejam feitas de forma síncrona.
+        StrictMode.setThreadPolicy(policy); //Permite que as webrequests sejam feitas de forma síncrona.
+        try { //Tratamento para execução da função de previsão, visto que a mesma pode ter uma exceção de URL incorreta.
+            previsao_Func();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
     }
 
-    public void compra_venda_display() {
-        compra_venda = findViewById(R.id.cotacao);
-        Retrofit retrofit = new Retrofit.Builder()
+    public void cotacao_Func() {
+        cotac_View = findViewById(R.id.cotacao);
+        Retrofit retrofit = new Retrofit.Builder() //Cria o construtor do Retrofit.
                 .baseUrl("https://economia.awesomeapi.com.br/") //Restante da url que foi declarada na interface MoedaAPI
-                .addConverterFactory(GsonConverterFactory.create()) //Aqui eu puxo a biblioteca do gson factory que faz a leitura do json importado da URL (API)
-                .build();
+                .addConverterFactory(GsonConverterFactory.create()) //O GsonFactory faz a leitura do jSON importado pela API.
+                .build(); //Constrói o Json
         MoedaAPI MoedaAPI = retrofit.create(MoedaAPI.class);
         Call<List<Moeda>> call = MoedaAPI.getMoedas();
         call.enqueue(new Callback<List<Moeda>>() {
             @Override
             public void onResponse(Call<List<Moeda>> call, Response<List<Moeda>> response) {
-                if (!response.isSuccessful()) { //Aqui é basicamente uma checagem para ver se a resposta deu sucesso na requisição get.
+                if (!response.isSuccessful()) { //Caso a resposta da API seja falha, a função retorná nada.
                     return;
                 }
-                List<Moeda> moedas = response.body(); //Aqui eu atribuo a lista de moeda aos objetos que consegui pelo body da API.
+                List<Moeda> moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
                 for (Moeda moeda : moedas) {
                     String content = "";
-                    content += "Compra: " + moeda.getBid() + "\n"; //Puxa a cotação para compra atual
-                    content += "Venda: " + moeda.getAsk(); //Puxa a cotação para venda atual
-                    //Para não ter que declarar mais de uma variável, simplesmente fiz um append das requisições acima em uma string só.
-                    compra_venda.append(content); //Junta tudo e substitui na textview de compra_venda que foi declarada no activity_main
+                    content += "Compra: " + moeda.getBid() + "\n"; //Recebe o valor de compra atual.
+                    content += "Venda: " + moeda.getAsk(); //Recebe o valor de venda atual.
+                    cotac_View.append(content); //Junta tudo e substitui o valor final na TextView "cotacao"
                 }
             }
 
             @Override
             public void onFailure(Call<List<Moeda>> call, Throwable t) {
-
             }
         });
     }
 
-    //Mesma coisa da classe de cima porém com algumas diferenças.
-    public void conversao() {
-        dolar = findViewById(R.id.dolar);
-        mEditValor = (EditText) findViewById(R.id.edit_Real);
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://economia.awesomeapi.com.br/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+    public void conversao_Func() {
+        dolar_View = findViewById(R.id.dolar);
+        valor_Edit = findViewById(R.id.edit_Real);
+        Retrofit retrofit = new Retrofit.Builder() //Cria o construtor do Retrofit.
+                .baseUrl("https://economia.awesomeapi.com.br/") //Restante da url que foi declarada na interface MoedaAPI
+                .addConverterFactory(GsonConverterFactory.create()) //O GsonFactory faz a leitura do jSON importado pela API.
+                .build(); //Constrói o Json
         MoedaAPI MoedaAPI = retrofit.create(MoedaAPI.class);
         Call<List<Moeda>> call = MoedaAPI.getMoedas();
         call.enqueue(new Callback<List<Moeda>>() {
-
             @Override
             public void onResponse(Call<List<Moeda>> call, Response<List<Moeda>> response) {
-                if (!response.isSuccessful()) {
+                if (!response.isSuccessful()) { //Caso a resposta da API seja falha, a função retorná nada.
                     return;
                 }
-                List<Moeda> moedas = response.body();
-                for (Moeda moeda : moedas) {
-                    double saida_display = 0;
-                    double compra = moeda.getBid(); //Puxa o valor de compra.
-                    double real = Double.parseDouble(mEditValor.getText().toString()); //Puxa o valor que foi inserido pelo usuário
-                    double resultado = real / compra; //Variável para realizar a multiplicação.
-                    dolar.setText(formatter.format(resultado));
+                List<Moeda> moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
+                for (Moeda moeda : moedas) { //Pega o valor inserido pelo usuário e divide pela cotação de compra, depois atribui o resultado à TextView.
+                    dolar_View.setText(formatter.format(Double.parseDouble(valor_Edit.getText().toString()) / moeda.getBid()));
                 }
             }
 
             @Override
             public void onFailure(Call<List<Moeda>> call, Throwable t) {
-
             }
         });
     }
 
     public File downloadData(String[] args) throws MalformedURLException {
         if (args.length != 0) {
-            tempPath = args[0];
+            local_Temp = args[0];
         } else {
-            tempPath = System.getProperty("java.io.tmpdir"); //Diretório temporário para armazenamento do arquivo baixado pela API.
+            local_Temp = System.getProperty("java.io.tmpdir"); //Diretório temporário para armazenamento do arquivo baixado.
         }
 
-        File filename = new File(tempPath, "auto-mpg.data");
-        BotUtil.downloadPage(new URL(MainActivity.DATA_URL), filename);
+        File filename = new File(local_Temp, "auto-mpg.data");
+        BotUtil.downloadPage(new URL(MainActivity.previsao_URL), filename);
         return filename;
     }
 
-    public void previsao() throws MalformedURLException {
-        previ = findViewById(R.id.previ);
+    public void previsao_Func() throws MalformedURLException {
+        previ_View = findViewById(R.id.previ);
         double saida_display = 0;
         //Seleciona o método de erro (rms = root mean square error)
         ErrorCalculation.setMode(ErrorCalculationMode.RMS);
@@ -223,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
             String dolarPrevisto = helper.denormalizeOutputVectorToString(output)[0];
             //Troca o valor do campo de texto que é nulo para o valor previsto pela framework encog.
             saida_display = Double.parseDouble(dolarPrevisto);
-            previ.setText(formatter.format(saida_display));
+            previ_View.setText(formatter.format(saida_display));
         }
     }
 }
