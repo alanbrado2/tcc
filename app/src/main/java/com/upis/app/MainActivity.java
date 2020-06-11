@@ -44,7 +44,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity {
-    static LocalDate data_inicio = LocalDate.now().minusDays(5); //Data atual -5 dias.
+    static LocalDate data_inicio = LocalDate.now().minusDays(10); //Data atual -10 dias.
     static LocalDate data_fim = LocalDate.now(); //Data atual.
     static DateTimeFormatter data_format = DateTimeFormatter.ofPattern("dd-MM-YYYY"); //Formatação para adequar à request da API.
     static String inicio = data_inicio.format(data_format); //String para compor a previsão_URL como parâmetro.
