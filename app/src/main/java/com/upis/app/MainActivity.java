@@ -32,8 +32,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.util.List;
 
 import retrofit2.Call;
@@ -44,12 +46,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity {
-    static LocalDate data_inicio = LocalDate.now().minusDays(10); //Data atual -10 dias.
-    static LocalDate data_fim = LocalDate.now(); //Data atual.
-    static DateTimeFormatter data_format = DateTimeFormatter.ofPattern("dd-MM-YYYY"); //Formatação para adequar à request da API.
-    static String inicio = data_inicio.format(data_format); //String para compor a previsão_URL como parâmetro.
-    static String fim = data_fim.format(data_format); //String para compor a previsão_URL como parâmetro.
-    static String previsao_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='" + inicio + "'&@dataFinalCotacao='" + fim + "'&$top=100&$format=text/csv&$select=cotacaoCompra";
     String local_Temp; //Local de armazenamento temporário do arquivo baixado para a previsão.
     NumberFormat formatter = new DecimalFormat("#0.00"); //Formatação para os valores double.
     TextView cotac_Compra; //TextView da cotação atual.
@@ -136,13 +132,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public File downloadData(String[] args) throws MalformedURLException {
+        LocalDate data_inicio = LocalDate.now().minusDays(10); //Data atual -10 dias.
+        LocalDate data_fim = LocalDate.now(); //Data atual.
+        DayOfWeek dia = DayOfWeek.of(data_fim.get(ChronoField.DAY_OF_WEEK));
+        switch (dia){ //Tratamento para o último dia de fechamento da moeda seja sempre um dia útil, caso contrário a requisição volta em branco.
+            case SATURDAY:
+                data_fim = LocalDate.now().minusDays(1);
+            case SUNDAY:
+                data_fim = LocalDate.now().minusDays(2);
+        }
+        DateTimeFormatter data_format = DateTimeFormatter.ofPattern("dd-MM-YYYY"); //Formatação para adequar à request da API.
+        String inicio = data_inicio.format(data_format); //String para compor a previsão_URL como parâmetro.
+        String fim = data_fim.format(data_format); //String para compor a previsão_URL como parâmetro.
+        String previsao_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='" + inicio + "'&@dataFinalCotacao='" + fim + "'&$top=100&$format=text/csv&$select=cotacaoCompra";
         if (args.length != 0) {
             local_Temp = args[0];
         } else {
             local_Temp = System.getProperty("java.io.tmpdir"); //Diretório temporário para armazenamento do arquivo baixado.
         }
         File filename = new File(local_Temp, "auto-mpg.data");
-        BotUtil.downloadPage(new URL(MainActivity.previsao_URL), filename);
+        BotUtil.downloadPage(new URL(previsao_URL), filename);
         return filename;
     }
 
