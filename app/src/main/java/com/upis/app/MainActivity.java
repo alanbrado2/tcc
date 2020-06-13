@@ -84,23 +84,22 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create()) //O GsonFactory faz a leitura do jSON importado pela API.
                 .build(); //Constrói o Json
         MoedaAPI MoedaAPI = retrofit.create(MoedaAPI.class);
-        Call<List<Moeda>> call = MoedaAPI.getMoedas();
-        call.enqueue(new Callback<List<Moeda>>() {
+        Call < List < Moeda >> call = MoedaAPI.getMoedas();
+        call.enqueue(new Callback < List < Moeda >> () {
             @Override
-            public void onResponse(Call<List<Moeda>> call, Response<List<Moeda>> response) {
+            public void onResponse(Call < List < Moeda >> call, Response < List < Moeda >> response) {
                 if (!response.isSuccessful()) { //Caso a resposta da API seja falha, a função retorná nada.
                     return;
                 }
-                List<Moeda> moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
-                for (Moeda moeda : moedas) {
+                List < Moeda > moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
+                for (Moeda moeda: moedas) {
                     cotac_Compra.setText(formatter.format(moeda.getBid()));
                     cotac_Venda.setText(formatter.format(moeda.getAsk()));
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Moeda>> call, Throwable t) {
-            }
+            public void onFailure(Call < List < Moeda >> call, Throwable t) {}
         });
     }
 
@@ -112,22 +111,21 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create()) //O GsonFactory faz a leitura do jSON importado pela API.
                 .build(); //Constrói o Json
         MoedaAPI MoedaAPI = retrofit.create(MoedaAPI.class);
-        Call<List<Moeda>> call = MoedaAPI.getMoedas();
-        call.enqueue(new Callback<List<Moeda>>() {
+        Call < List < Moeda >> call = MoedaAPI.getMoedas();
+        call.enqueue(new Callback < List < Moeda >> () {
             @Override
-            public void onResponse(Call<List<Moeda>> call, Response<List<Moeda>> response) {
+            public void onResponse(Call < List < Moeda >> call, Response < List < Moeda >> response) {
                 if (!response.isSuccessful()) { //Caso a resposta da API seja falha, a função retorná nada.
                     return;
                 }
-                List<Moeda> moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
-                for (Moeda moeda : moedas) { //Pega o valor inserido pelo usuário e divide pela cotação de compra, depois atribui o resultado à TextView.
+                List < Moeda > moedas = response.body(); //Atribuição da lista aos objetos adquiridos pelo corpo da requisição.
+                for (Moeda moeda: moedas) { //Pega o valor inserido pelo usuário e divide pela cotação de compra, depois atribui o resultado à TextView.
                     dolar_View.setText(formatter.format(Double.parseDouble(valor_Edit.getText().toString()) / moeda.getBid()));
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Moeda>> call, Throwable t) {
-            }
+            public void onFailure(Call < List < Moeda >> call, Throwable t) {}
         });
     }
 
@@ -135,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         LocalDate data_inicio = LocalDate.now().minusDays(10); //Data atual -10 dias.
         LocalDate data_fim = LocalDate.now(); //Data atual.
         DayOfWeek dia = DayOfWeek.of(data_fim.get(ChronoField.DAY_OF_WEEK));
-        switch (dia){ //Tratamento para o último dia de fechamento da moeda seja sempre um dia útil, caso contrário a requisição volta em branco.
+        switch (dia) { //Tratamento para o último dia de fechamento da moeda seja sempre um dia útil, caso contrário a requisição volta em branco.
             case SATURDAY:
                 data_fim = LocalDate.now().minusDays(1);
             case SUNDAY:
@@ -193,13 +191,13 @@ public class MainActivity extends AppCompatActivity {
         NormalizationHelper helper = data.getNormHelper();
         //Formata e lê como csv.
         ReadCSV csv = new ReadCSV(filename, true, format);
-        String[] line = new String[1];   //  Vetor de entrada (Somente a cotação)
-        double[] slice = new double[1];  // Vetor de saída (Somente UM double)
+        String[] line = new String[1]; //  Vetor de entrada (Somente a cotação)
+        double[] slice = new double[1]; // Vetor de saída (Somente UM double)
         //Pegas as últimas 5 cotações do arquivo.
         MLData input = helper.allocateInputVector(5);
         //Processa a regressão.
         String saida = "";
-        while (csv.next()) {  //Lê as próximas linhas do arquivo csv.
+        while (csv.next()) { //Lê as próximas linhas do arquivo csv.
             StringBuilder result = new StringBuilder();
             //Pega a cotação do dólar no registro do csv.
             line[0] = csv.get(0);
